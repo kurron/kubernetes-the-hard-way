@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash +x
 
 # Cloud Infrastructure Provisioning - Amazon Web Services
 
@@ -120,3 +120,41 @@ aws elb create-load-balancer \
   --subnets ${SUBNET_ID} \
   --security-groups ${SECURITY_GROUP_ID}
  
+# Virtual Machines: Instance IAM Policies
+cat > kubernetes-iam-role.json <<'EOF'
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {"Effect": "Allow", "Principal": { "Service": "ec2.amazonaws.com"}, "Action": "sts:AssumeRole"}
+  ]
+}
+EOF
+
+aws iam create-role \
+  --role-name kubernetes \
+  --assume-role-policy-document file://kubernetes-iam-role.json
+
+cat > kubernetes-iam-policy.json <<'EOF'
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {"Effect": "Allow", "Action": ["ec2:*"], "Resource": ["*"]},
+    {"Effect": "Allow", "Action": ["elasticloadbalancing:*"], "Resource": ["*"]},
+    {"Effect": "Allow", "Action": ["route53:*"], "Resource": ["*"]},
+    {"Effect": "Allow", "Action": ["ecr:*"], "Resource": "*"}
+  ]
+}
+EOF
+
+aws iam put-role-policy \
+  --role-name kubernetes \
+  --policy-name kubernetes \
+  --policy-document file://kubernetes-iam-policy.json
+
+aws iam create-instance-profile \
+  --instance-profile-name kubernetes
+
+aws iam add-role-to-instance-profile \
+  --instance-profile-name kubernetes \
+  --role-name kubernetes
+

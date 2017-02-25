@@ -5,7 +5,7 @@ aws elb delete-load-balancer \
   --load-balancer-name kubernetes
 
 # I got an error so lets wait a bit before moving on
-sleep 10
+sleep 30
 
 # Networking: Internet Gateway
 VPC_ID=$(aws ec2 describe-vpcs \
@@ -60,3 +60,17 @@ DHCP_OPTION_SET_ID=$(aws ec2 describe-dhcp-options \
 
 aws ec2 delete-dhcp-options \
   --dhcp-options-id ${DHCP_OPTION_SET_ID}
+
+# Virtual Machines: Instance IAM Policies
+aws iam remove-role-from-instance-profile \
+  --instance-profile-name kubernetes \
+  --role-name kubernetes
+
+aws iam delete-instance-profile \
+  --instance-profile-name kubernetes
+
+aws iam delete-role-policy \
+  --role-name kubernetes \
+  --policy-name kubernetes
+
+aws iam delete-role --role-name kubernetes
