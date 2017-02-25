@@ -7,6 +7,7 @@ using AWS.
 # Prerequisites
 * a working [AW CLI](https://aws.amazon.com/cli/)
 * you have run `aws configure`, providing the required information
+* JQ Command-line JSON processor
 
 # Building
 There is noting to build.
